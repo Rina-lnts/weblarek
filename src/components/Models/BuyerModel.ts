@@ -1,4 +1,4 @@
-import { IBuyer, TPayment, IBuyerModel } from '../../types/index';
+import { IBuyer, TPayment, IBuyerModel, TBuyerValidationErrors } from '../../types/index';
 
 export class BuyerModel implements IBuyerModel {
   private _payment: TPayment | null = null;
@@ -18,7 +18,7 @@ export class BuyerModel implements IBuyerModel {
   // Получить все данные покупателя
   getData(): IBuyer {
   return {
-    payment: this._payment as TPayment,
+    payment: this._payment,
     email: this._email,
     phone: this._phone,
     address: this._address,
@@ -34,14 +34,14 @@ export class BuyerModel implements IBuyerModel {
   }
 
   // Валидация — возвращает объект с ошибками
-  validate(): Partial<Record<keyof IBuyer, string>> {
-    const errors: Partial<Record<keyof IBuyer, string>> = {};
+  validate(): TBuyerValidationErrors {
+  const errors: TBuyerValidationErrors = {};
 
-    if (!this._payment) errors.payment = 'Не выбран способ оплаты';
-    if (!this._address) errors.address = 'Введите адрес доставки';
-    if (!this._email) errors.email = 'Введите email';
-    if (!this._phone) errors.phone = 'Введите телефон';
+  if (!this._payment) errors.payment = 'Не выбран способ оплаты';
+  if (!this._address.trim()) errors.address = 'Введите адрес доставки';
+  if (!this._email.trim()) errors.email = 'Введите email';
+  if (!this._phone.trim()) errors.phone = 'Введите телефон';
 
-    return errors;
-  }
+  return errors;
+}
 }

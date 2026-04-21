@@ -20,7 +20,7 @@ export type TPayment = 'card' | 'cash';
 
 // Описывает данные покупателя при оформлении заказа
 export interface IBuyer {
-  payment: TPayment;
+  payment: TPayment | null;
   email: string;
   phone: string;
   address: string;
@@ -69,5 +69,7 @@ export interface IBuyerModel {
   setField(field: keyof IBuyer, value: string): void;
   getData(): IBuyer;
   clear(): void;
-  validate(): Partial<Record<keyof IBuyer, string>>;
+  validate(): TBuyerValidationErrors;
 }
+
+export type TBuyerValidationErrors = Partial<Record<keyof IBuyer, string>>;
