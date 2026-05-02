@@ -161,25 +161,31 @@ events.on('form:change', ({ field, value }: { field: string; value: string }) =>
 });
 
 // 11. Данные покупателя изменились — валидируем форму и обновляем UI
+// 11. Данные покупателя изменились — валидируем форму и обновляем UI
 events.on('buyer:changed', () => {
   const errors = buyerModel.validate();
   const data = buyerModel.getData();
 
-  // Определяем, какая форма сейчас открыта, по наличию в DOM
-  const orderForm = modalElement.querySelector<HTMLFormElement>('form[name=order]');
-  const contactsForm = modalElement.querySelector<HTMLFormElement>('form[name=contacts]');
+  const orderFormEl = modalElement.querySelector<HTMLFormElement>('form[name=order]');
+  const contactsFormEl = modalElement.querySelector<HTMLFormElement>('form[name=contacts]');
 
-  if (orderForm) {
-    const form = new OrderForm(orderForm, events);
-    form.payment = data.payment ?? '';
-    form.valid = !errors.payment && !errors.address;
-    form.errors = [errors.payment, errors.address].filter(Boolean).join(', ');
+  if (orderFormEl) {
+    // Обновляем кнопки оплаты напрямую через DOM, без пересоздания класса
+    const buttons = orderFormEl.querySelectorAll<HTMLButtonElement>('.order__buttons .button_alt');
+    buttons.forEach(btn => {
+      btn.classList.toggle('button_alt-active', btn.name === data.payment);
+    });
+    const submitBtn = orderFormEl.querySelector<HTMLButtonElement>('button[type=submit]');
+    const errorsEl = orderFormEl.querySelector<HTMLElement>('.form__errors');
+    if (submitBtn) submitBtn.disabled = !(!errors.payment && !errors.address);
+    if (errorsEl) errorsEl.textContent = [errors.payment, errors.address].filter(Boolean).join(', ');
   }
 
-  if (contactsForm) {
-    const form = new ContactsForm(contactsForm, events);
-    form.valid = !errors.email && !errors.phone;
-    form.errors = [errors.email, errors.phone].filter(Boolean).join(', ');
+  if (contactsFormEl) {
+    const submitBtn = contactsFormEl.querySelector<HTMLButtonElement>('button[type=submit]');
+    const errorsEl = contactsFormEl.querySelector<HTMLElement>('.form__errors');
+    if (submitBtn) submitBtn.disabled = !(!errors.email && !errors.phone);
+    if (errorsEl) errorsEl.textContent = [errors.email, errors.phone].filter(Boolean).join(', ');
   }
 });
 
