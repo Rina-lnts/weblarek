@@ -12,7 +12,9 @@ import { BuyerModel } from './components/Models/BuyerModel';
 // Представления
 import { Page } from './components/View/Page';
 import { Modal } from './components/View/Modal';
-import { CardCatalog, CardPreview, CardBasket } from './components/View/Card';
+import { CardCatalog } from './components/View/CardCatalog';
+import { CardPreview } from './components/View/CardPreview';
+import { CardBasket } from './components/View/CardBasket';
 import { Basket } from './components/View/Basket';
 import { OrderForm, ContactsForm } from './components/View/Form';
 import { Success } from './components/View/Success';
