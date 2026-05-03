@@ -16,7 +16,8 @@ import { CardCatalog } from './components/View/CardCatalog';
 import { CardPreview } from './components/View/CardPreview';
 import { CardBasket } from './components/View/CardBasket';
 import { Basket } from './components/View/Basket';
-import { OrderForm, ContactsForm } from './components/View/Form';
+import { OrderForm } from './components/View/OrderForm';
+import { ContactsForm } from './components/View/ContactsForm';
 import { Success } from './components/View/Success';
 
 import { cloneTemplate, ensureElement } from './utils/utils';
@@ -147,7 +148,9 @@ events.on('basket:remove', ({ id }: { id: string }) => {
 // 8. Пользователь нажал «Оформить» — открываем первую форму
 events.on('order:open', () => {
   const form = new OrderForm(cloneTemplate<HTMLFormElement>(orderTemplate), events);
-  const element = form.render({ valid: false, errors: '' });
+  form.valid = false;
+  form.errors = '';
+  const element = form.render();
   modal.content = element;
   modal.open();
 });
@@ -194,7 +197,9 @@ events.on('buyer:changed', () => {
 // 12. Первая форма отправлена — переходим ко второй
 events.on('order:submit', () => {
   const form = new ContactsForm(cloneTemplate<HTMLFormElement>(contactsTemplate), events);
-  const element = form.render({ valid: false, errors: '' });
+  form.valid = false;
+  form.errors = '';
+  const element = form.render();
   modal.content = element;
 });
 

@@ -14,6 +14,7 @@ export abstract class Form extends Component<IFormState> {
   constructor(container: HTMLFormElement, events: IEvents) {
     super(container);
     this._form = container;
+
     this._submitButton = container.querySelector('button[type=submit]')!;
     this._errors = container.querySelector('.form__errors')!;
 
