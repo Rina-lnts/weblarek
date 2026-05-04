@@ -1,20 +1,16 @@
 import { Card } from './Card';
-import { IEvents } from '../base/Events';
 import { categoryMap } from '../../utils/constants';
 
 export class CardCatalog extends Card {
   private _category: HTMLElement;
   private _image: HTMLImageElement;
 
-  constructor(container: HTMLElement, events: IEvents) {
+  constructor(container: HTMLElement, onClick: () => void) {
     super(container);
-
     this._category = container.querySelector('.card__category')!;
     this._image = container.querySelector('.card__image')!;
 
-    container.addEventListener('click', () => {
-      events.emit('card:select', { id: container.dataset.id });
-    });
+    container.addEventListener('click', onClick);
   }
 
   set category(value: string) {

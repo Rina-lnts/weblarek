@@ -51,86 +51,75 @@ const contactsForm = new ContactsForm(cloneTemplate<HTMLFormElement>(contactsTem
 const successView = new Success(cloneTemplate(successTemplate), events);
 const cardPreview = new CardPreview(cloneTemplate(cardPreviewTemplate), events);
 
-// 1. Каталог загружен
+// 1. Каталог загружен — карточки создаются с колбэком
 events.on('catalog:changed', () => {
   const cards = productsModel.getItems().map(item => {
-    const card = new CardCatalog(cloneTemplate(cardCatalogTemplate), events);
-    const element = card.render({
+    const card = new CardCatalog(
+      cloneTemplate(cardCatalogTemplate),
+      () => productsModel.setPreview(item)
+    );
+    return card.render({
       title: item.title,
       price: item.price,
       category: item.category,
       image: CDN_URL + item.image,
     });
-    element.dataset.id = item.id;
-    return element;
   });
   gallery.catalog = cards;
 });
 
-// 2. Клик на карточку
-events.on('card:select', ({ id }: { id: string }) => {
-  const item = productsModel.getItemById(id);
-  if (item) productsModel.setPreview(item);
-});
-
-// 3. Превью изменилось
+// 2. Превью изменилось — показываем модальное окно
 events.on('preview:changed', ({ item }: { item: IProduct }) => {
   cardPreview.inBasket = basketModel.hasItem(item.id);
-  const element = cardPreview.render({
+  modal.content = cardPreview.render({
     title: item.title,
     price: item.price,
     category: item.category,
     image: CDN_URL + item.image,
     description: item.description,
   });
-  element.dataset.id = item.id;
-  modal.content = element;
   modal.open();
 });
 
-// 4. Купить / удалить из корзины
-events.on('card:buy', ({ id, inBasket }: { id: string; inBasket: boolean }) => {
-  const item = productsModel.getItemById(id);
+// 3. Купить / удалить из корзины — берём товар из модели, не из события
+events.on('card:buy', () => {
+  const item = productsModel.getPreview();
   if (!item) return;
-  if (inBasket) {
-    basketModel.removeItem(id);
+  if (basketModel.hasItem(item.id)) {
+    basketModel.removeItem(item.id);
   } else {
     basketModel.addItem(item);
   }
   modal.close();
 });
 
-// 5. Корзина изменилась — обновляем счётчик и перерисовываем содержимое
+// 4. Корзина изменилась — обновляем счётчик и перерисовываем содержимое
 events.on('basket:changed', () => {
   header.counter = basketModel.getCount();
 
   const cards = basketModel.getItems().map((item, index) => {
-    const card = new CardBasket(cloneTemplate(cardBasketTemplate), events);
+    const card = new CardBasket(
+      cloneTemplate(cardBasketTemplate),
+      () => basketModel.removeItem(item.id)
+    );
     card.index = index + 1;
-    const element = card.render({
+    return card.render({
       title: item.title,
       price: item.price,
     });
-    element.dataset.id = item.id;
-    return element;
   });
 
   basketView.items = cards;
   basketView.total = basketModel.getTotalPrice();
 });
 
-// 6. Открытие корзины
+// 5. Открытие корзины
 events.on('basket:open', () => {
   modal.content = basketView.render();
   modal.open();
 });
 
-// 7. Удаление товара — basket:changed перерисует корзину сам
-events.on('basket:remove', ({ id }: { id: string }) => {
-  basketModel.removeItem(id);
-});
-
-// 8. Открытие первой формы
+// 6. Открытие первой формы
 events.on('order:open', () => {
   orderForm.valid = false;
   orderForm.errors = '';
@@ -138,17 +127,17 @@ events.on('order:open', () => {
   modal.open();
 });
 
-// 9. Выбор способа оплаты
+// 7. Выбор способа оплаты
 events.on('payment:select', ({ payment }: { payment: string }) => {
   buyerModel.setField('payment', payment);
 });
 
-// 10. Изменение полей формы
+// 8. Изменение полей формы
 events.on('form:change', ({ field, value }: { field: string; value: string }) => {
   buyerModel.setField(field as keyof ReturnType<typeof buyerModel.getData>, value);
 });
 
-// 11. Данные покупателя изменились — обновляем формы через сеттеры
+// 9. Данные покупателя изменились — обновляем формы через сеттеры
 events.on('buyer:changed', () => {
   const errors = buyerModel.validate();
   const data = buyerModel.getData();
@@ -161,14 +150,14 @@ events.on('buyer:changed', () => {
   contactsForm.errors = [errors.email, errors.phone].filter(Boolean).join(', ');
 });
 
-// 12. Сабмит первой формы
+// 10. Сабмит первой формы — открываем вторую
 events.on('order:submit', () => {
   contactsForm.valid = false;
   contactsForm.errors = '';
   modal.content = contactsForm.render();
 });
 
-// 13. Сабмит второй формы — отправляем заказ
+// 11. Сабмит второй формы — отправляем заказ
 events.on('contacts:submit', () => {
   const data = buyerModel.getData();
   const items = basketModel.getItems().map(item => item.id);
@@ -184,12 +173,12 @@ events.on('contacts:submit', () => {
     .catch(err => console.error('Ошибка оформления заказа:', err));
 });
 
-// 14. Закрытие экрана успеха
+// 12. Закрытие экрана успеха
 events.on('success:close', () => {
   modal.close();
 });
 
-// Загрузка товаров
+// Загрузка товаров с сервера
 larekApi.getProducts()
   .then(data => {
     productsModel.setItems(data.items);

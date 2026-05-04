@@ -18,7 +18,7 @@ export class CardPreview extends Card {
     this._button = container.querySelector('.card__button')!;
 
     this._button.addEventListener('click', () => {
-      events.emit('card:buy', { id: container.dataset.id, inBasket: this._inBasket });
+      events.emit('card:buy');
     });
   }
 
