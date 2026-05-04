@@ -111,6 +111,10 @@ events.on('basket:changed', () => {
 
   basketView.items = cards;
   basketView.total = basketModel.getTotalPrice();
+
+  if (modalElement.classList.contains('modal_active')) {
+    modal.content = basketView.render();
+  }
 });
 
 // 5. Открытие корзины
