@@ -121,8 +121,6 @@ events.on('basket:open', () => {
 
 // 6. Открытие первой формы
 events.on('order:open', () => {
-  orderForm.valid = false;
-  orderForm.errors = '';
   modal.content = orderForm.render();
   modal.open();
 });
@@ -141,8 +139,12 @@ events.on('form:change', ({ field, value }: { field: string; value: string }) =>
 events.on('buyer:changed', () => {
   const errors = buyerModel.validate();
   const data = buyerModel.getData();
-
+  
   orderForm.payment = data.payment ?? '';
+  orderForm.address = data.address;
+  contactsForm.email = data.email;
+  contactsForm.phone = data.phone;
+
   orderForm.valid = !errors.payment && !errors.address;
   orderForm.errors = [errors.payment, errors.address].filter(Boolean).join(', ');
 
@@ -152,8 +154,6 @@ events.on('buyer:changed', () => {
 
 // 10. Сабмит первой формы — открываем вторую
 events.on('order:submit', () => {
-  contactsForm.valid = false;
-  contactsForm.errors = '';
   modal.content = contactsForm.render();
 });
 
